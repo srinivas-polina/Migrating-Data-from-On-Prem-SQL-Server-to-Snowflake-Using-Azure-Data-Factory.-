@@ -57,12 +57,12 @@ COPY INTO my_table
 FROM @my_stage/path/to/files/
 FILE_FORMAT = (TYPE = CSV FIELD_OPTIONALLY_ENCLOSED_BY='"');
 ```
-### 🎯 code used for LOOKUP tables in ADF:
+### 🎯 code used for LOOKUP tables in ADF and Snowflake Script:
 ```sql
 select TABLE_SCHEMA,TABLE_NAME from AdventureWorks2022.INFORMATION_SCHEMA.TABLES where TABLE_TYPE='BASE TABLE';
 ---
+
 ### 🎯 code used for snowflake script:
-```sql
 USE MY_DATABASE.PUBLIC;
 
 CREATE or REPLACE TABLE MY_DATABASE.PUBLIC.@{item().TABLE_NAME}
