@@ -51,14 +51,36 @@ CREATE OR REPLACE STAGE my_stage
 URL='azure://<storage-account>.dfs.core.windows.net/<container>'
 STORAGE_INTEGRATION = my_storage_integration;
 ```
-
 ### 🎯 Load Data into Snowflake Using COPY INTO:
 ```sql
 COPY INTO my_table
 FROM @my_stage/path/to/files/
 FILE_FORMAT = (TYPE = CSV FIELD_OPTIONALLY_ENCLOSED_BY='"');
 ```
+### 🎯 code used for LOOKUP tables in ADF:
+```sql
+select TABLE_SCHEMA,TABLE_NAME from AdventureWorks2022.INFORMATION_SCHEMA.TABLES where TABLE_TYPE='BASE TABLE';
 ---
+### 🎯 code used for snowflake script:
+```sql
+USE MY_DATABASE.PUBLIC;
+
+CREATE or REPLACE TABLE MY_DATABASE.PUBLIC.@{item().TABLE_NAME}
+  USING TEMPLATE (
+    SELECT ARRAY_AGG(OBJECT_CONSTRUCT(*))
+      FROM TABLE(
+        INFER_SCHEMA(
+          LOCATION=>'@{concat('@MIGRATIONS/migration_data/',item().TABLE_SCHEMA,'_',item().TABLE_NAME,'.CSV')}',
+          FILE_FORMAT=>'my_csv_format'
+        )
+      ));
+
+COPY INTO CULTURE_TEST FROM '@{concat('@MIGRATIONS/migration_data/',item().TABLE_SCHEMA,'_',item().TABLE_NAME,'.CSV')}'
+            FILE_FORMAT = (
+            FORMAT_NAME= 'my_csv_format'
+            )
+            MATCH_BY_COLUMN_NAME=CASE_INSENSITIVE;
+```
 ## 🏗 Prerequisites
 - **Azure Subscription** with ADF & ADLS2 configured.
 - **Snowflake Account** with Storage Integration enabled.
